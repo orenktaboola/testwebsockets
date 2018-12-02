@@ -17,7 +17,7 @@ const io = socketIO(server);
 
 // Register "connection" events to the WebSocket
 io.on("connection", function(socket) {
-  io.emit('connected to my app');
+  io.emit('connected to my app!');
 
   // Register "join" events, requested by a connected client
   // socket.on("join", function (room) {
