@@ -4,13 +4,10 @@
   "scripts": {
     "start": "node index.js"
   },
-  "engines": {
-    "node": "10.x"
-  },
   "main": "index.js",
   "license": "ISC",
   "dependencies": {
     "express": "^4.16.2",
-    "sockjs" : "0.3.8"
+    "socketio": "^1.0.0"
   }
 }
