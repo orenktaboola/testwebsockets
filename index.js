@@ -1,66 +1,32 @@
-var express = require('express'),
-	http = require('http'),
-	sockjs = require('sockjs'),
-	connectedDevices = [];
+// Import packages
+const express = require("express");
+const socketIO = require("socket.io");
+const path = require("path");
 
-var app = express();
+// Configuration
+const PORT = process.env.PORT || 3000;
+const INDEX = path.join(__dirname, 'index.html');
 
-app.set('port', process.env.PORT || 3000);
-app.use(express.favicon());
-app.use(express.logger('dev'));
-app.use(express.bodyParser());
-app.use(express.methodOverride());
-app.use(app.router);
+// Start server
+const server = express()
+  .use((req, res) => res.sendFile(INDEX) )
+ .listen(PORT, () => console.log("Listening on localhost:" + PORT));
 
-// Create the socket
-var options = {};
+// Initiatlize SocketIO
+const io = socketIO(server);
 
-options.log = function(severity, message) {
-	console.log("WS LOG: " + message);
-};
+// Register "connection" events to the WebSocket
+io.on("connection", function(socket) {
+  io.emit('connected to my app');
 
-var echo = sockjs.createServer(options);
-
-echo.on('connection', function(conn) {
-	console.log('New connection');
-	connectedDevices.push(conn);
-
-	conn.on('data', function(message) {
-	});
-
-	conn.on('close', function() {
-	console.log('Connection closed');
-	connectedDevices.splice(connectedDevices.indexOf(conn), 1);
-    });
-});
-
-// Route to dispatch a message to all connected devices
-app.post('/dispatchMessage', function(req, res) {
-	var messageToDispatch = req.body["message"];
-	var i = 0;
-	if (messageToDispatch && messageToDispatch.length) {
-		console.log('dispatching: ' + messageToDispatch);
-		console.log('connected devices: ' + connectedDevices);
-		for (; i < connectedDevices.length; i++) {
-			console.log("dispatching to ");
-			connectedDevices[i].write(messageToDispatch);
-		}
-	}
-
-	res.type('application/json; charset=utf-8');
-	res.send('{ "result": "message dispatched to ' + i + ' devices" }');
-});
-
-// Display a default message on '/'
-app.get('/', function (req, res) {
-	res.type('text/plain');
-	res.send('Nothing to see here');
-});
-
-var server = http.createServer(app);
-
-echo.installHandlers(server, { prefix:'/ws' });
-
-server.listen(app.get('port'), function () {
-	console.log('Express server listening on port ' + app.get('port'));
+  // Register "join" events, requested by a connected client
+  // socket.on("join", function (room) {
+  //   // join channel provided by client
+  //   socket.join(room)
+  //   // Register "image" events, sent by the client
+  //   socket.on("image", function(msg) {
+  //     // Broadcast the "image" event to all other clients in the room
+  //     socket.broadcast.to(room).emit("image", msg);
+  //   });
+  // })
 });
